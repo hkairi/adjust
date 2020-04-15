@@ -1,7 +1,13 @@
+# Dependencies
+``` go mod tidy ```
+
+# Build the executable
 ```
 go build -o myhttp
 ```
 
+# Run the application
 ```
-./myhttp
+./myhttp -parallel 3 adjust.com google.com facebook.com yahoo.com yandex.com twitter.com
+reddit.com/r/funny reddit.com/r/notfunny baroquemusiclibrary.com
 ```

@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	limit := flag.Int("limit", 10, "Limit of parallel tasks.")
+	limit := flag.Int("parallel", 10, "Limit of parallel tasks.")
 	flag.Parse()
 
 	liste := os.Args[3:]
