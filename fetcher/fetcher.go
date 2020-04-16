@@ -32,29 +32,24 @@ func New(limit int, urls []string) *fetcher {
 }
 
 func (f *fetcher) Start() {
-	results := make(chan *Result, len(f.Urls))
-	urlsCh := make(chan string, f.Limit)
+	var wg sync.WaitGroup
 
-	go func() {
-		var wg sync.WaitGroup
-		for url := range urlsCh {
-			wg.Add(1)
-			go f.process(url, results, &wg)
-		}
-		wg.Wait()
-		close(results)
-	}()
-
-	go func() {
-		for _, url := range f.Urls {
-			urlsCh <- url
-		}
-		close(urlsCh)
-	}()
-
-	for res := range results {
-		fmt.Printf("%-40s %s \n", res.Url, res.Hash)
+	urlsCh := make(chan string, len(f.Urls))
+	for _, url := range f.Urls {
+		urlsCh <- url
 	}
+	close(urlsCh)
+
+	wg.Add(len(f.Urls))
+
+	for i := 0; i < f.Limit; i++ {
+		go func() {
+			for url := range urlsCh {
+				go f.process(url, &wg)
+			}
+		}()
+	}
+	wg.Wait()
 }
 
 func (f *fetcher) HashText(s string) string {
@@ -64,7 +59,7 @@ func (f *fetcher) HashText(s string) string {
 	return hashedUrl
 }
 
-func (f *fetcher) process(url string, ch chan<- *Result, wg *sync.WaitGroup) {
+func (f *fetcher) process(url string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	var full_url string = fmt.Sprintf("http://%s", url)
@@ -81,5 +76,5 @@ func (f *fetcher) process(url string, ch chan<- *Result, wg *sync.WaitGroup) {
 
 	hashedUrl := f.HashText(string(body))
 
-	ch <- &Result{Url: url, Hash: hashedUrl}
+	fmt.Printf("%-40s %s \n", url, hashedUrl)
 }
